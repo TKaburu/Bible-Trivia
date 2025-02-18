@@ -28,6 +28,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Local installs
+    'trivia.apps.TriviaConfig',
+
+    # Third party installs
+    'corsheaders',
+    'rest_framework',
+
 ]
 
 MIDDLEWARE = [
