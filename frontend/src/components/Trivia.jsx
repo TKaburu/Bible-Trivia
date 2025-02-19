@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import Load from './Load';
 import axios from 'axios';
 import '../styles/trivia.css';
 
 const Trivia = () => {
+    const [loading, setLoading] = useState(true);
     const [questions, setQuestions] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [userAnswer, setUserAnswer] = useState(null);
@@ -29,10 +31,12 @@ const Trivia = () => {
                     };
                 });
                 setQuestions(transformedQuestions);
+                setLoading(false);
             })
             .catch((err) => {
                 console.error("Error fetching data: ", err);
                 setError(err);
+                setLoading(false);
             });
     }, []);
 
@@ -112,8 +116,8 @@ const Trivia = () => {
     }
 
     // If there are no questions or the questions are still loading
-    if (questions.length === 0) {
-        return <div>Loading questions...</div>;
+    if (loading) {
+        return <Load />; // Show the loading spinner
     }
 
     const question = questions[currentQuestion];
