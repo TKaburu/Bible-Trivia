@@ -1,0 +1,119 @@
+.trivia-section {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+input[type="text"] {
+    padding: 10px;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 400px;
+    background-color: transparent;
+    color: #333;
+    border: 1px solid #007bff;
+    border-radius: 5px;
+    transition: border-color 0.3s ease;
+  }
+
+input[type="text"]:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* input[type="text"] {
+    padding: 10px;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 400px;
+    color: #333;
+    border: 1px solid #007bff;
+    border-radius: 5px;
+} */
+
+h1 {
+    text-align: center;
+    font-weight: 600;
+}
+
+h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+button {
+    display: block;
+    width: 100%;
+    padding: 10px 20px;
+    margin: 10px 0;
+    font-size: 1rem;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: background-color 0.3s, transform 0.3s;
+    background-color: #f4f4f4;
+    text-align: left;
+}
+
+button:hover {
+    background-color: #d9d9d9;
+    transform: translateY(-2px);
+}
+
+button.correct {
+    background-color: #28a745;
+    color: white;
+}
+
+button.wrong {
+    background-color: #dc3545;
+    color: white;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.feedback-message {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    color: #333;
+    font-weight: bold;
+}
+
+.score-container {
+    margin-top: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: 50px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.score-container h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.score-container button {
+    padding: 12px 24px;
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.score-container button:hover {
+    background-color: #0056b3;
+}
