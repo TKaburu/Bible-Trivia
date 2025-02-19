@@ -8,7 +8,6 @@ const Trivia = () => {
     const [questions, setQuestions] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [userAnswer, setUserAnswer] = useState(null);
-    const [correctAnswer, setCorrectAnswer] = useState(null);
     const [score, setScore] = useState(0);
     const [finalScore, setFinalScore] = useState(false);
     const [error, setError] = useState(null);
@@ -25,12 +24,21 @@ const Trivia = () => {
                         question.choice_d
                     ].filter(choice => choice !== null);
 
+                    // Shuffle choices before returning the question object
+                    const shuffledChoices = randomizeQuestions(choices);
+
+                    // Set the correct answer text directly
+                    const correctAnswerText = question.correct_answer;
+
                     return {
                         ...question,
-                        choices: choices
+                        choices: shuffledChoices,
+                        correct_answer: correctAnswerText // Store the correct answer text (not index)
                     };
                 });
-                setQuestions(transformedQuestions);
+
+                const randomQuestions = randomizeQuestions(transformedQuestions);
+                setQuestions(randomQuestions);
                 setLoading(false);
             })
             .catch((err) => {
@@ -40,8 +48,19 @@ const Trivia = () => {
             });
     }, []);
 
+    // Shuffle the questions
+    const randomizeQuestions = (array) => {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    };
+
     const handleAnswer = (answer) => {
-        const correctAnswer = questions[currentQuestion].correct_answer;
+        const correctAnswer = questions[currentQuestion]?.correct_answer;  // Use optional chaining to avoid errors if currentQuestion is undefined
+
+        if (!correctAnswer) return;  // Safeguard for undefined correctAnswer
 
         // Check if the user's answer matches the correct one
         if (answer === correctAnswer) {
@@ -52,7 +71,6 @@ const Trivia = () => {
         }
 
         setUserAnswer(answer);
-        setCorrectAnswer(correctAnswer);
 
         setTimeout(() => {
             if (currentQuestion + 1 < questions.length) {
@@ -67,7 +85,9 @@ const Trivia = () => {
 
     // Handle user input for text-based questions
     const handleInputAnswer = (inputAnswer) => {
-        const correctAnswer = questions[currentQuestion].correct_answer;
+        const correctAnswer = questions[currentQuestion]?.correct_answer;
+
+        if (!correctAnswer) return;
 
         if (inputAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim()) {
             setScore(score + 1);
@@ -103,7 +123,6 @@ const Trivia = () => {
                         // Reset all the relevant state variables
                         setCurrentQuestion(0);
                         setUserAnswer(null);
-                        setCorrectAnswer(null);
                         setScore(0);
                         setFinalScore(false);
                         setFeedbackMessage("");
@@ -117,7 +136,7 @@ const Trivia = () => {
 
     // If there are no questions or the questions are still loading
     if (loading) {
-        return <Load />; // Show the loading spinner
+        return <Load />;
     }
 
     const question = questions[currentQuestion];
@@ -138,9 +157,9 @@ const Trivia = () => {
 
                             let buttonClass = "";
                             if (userAnswer) {
-                                if (choice === correctAnswer) {
+                                if (choice === question.correct_answer) {
                                     buttonClass = "correct";
-                                } else if (choice === userAnswer && choice !== correctAnswer) {
+                                } else if (choice === userAnswer && choice !== question.correct_answer) {
                                     buttonClass = "wrong";
                                 }
                             }
