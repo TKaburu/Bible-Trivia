@@ -11,7 +11,10 @@ const Trivia = () => {
     const [score, setScore] = useState(0);
     const [finalScore, setFinalScore] = useState(false);
     const [error, setError] = useState(null);
-    const [feedbackMessage, setFeedbackMessage] = useState(""); 
+    const [feedbackMessage, setFeedbackMessage] = useState("");
+    const [feedbackType, setFeedbackType] = useState(""); 
+    const [isTimerMode, setIsTimerMode] = useState(false);  // Track if timer mode is active
+    const [timeLeft, setTimeLeft] = useState(10);  // Timer countdown value
 
     useEffect(() => {
         axios.get('http://127.0.0.1:8000/trivia/questions')
@@ -58,16 +61,18 @@ const Trivia = () => {
     };
 
     const handleAnswer = (answer) => {
-        const correctAnswer = questions[currentQuestion]?.correct_answer;  // Use optional chaining to avoid errors if currentQuestion is undefined
+        const correctAnswer = questions[currentQuestion]?.correct_answer;
 
-        if (!correctAnswer) return;  // Safeguard for undefined correctAnswer
+        if (!correctAnswer) return;
 
         // Check if the user's answer matches the correct one
         if (answer === correctAnswer) {
             setScore(score + 1);
             setFeedbackMessage("Correct!");
+            setFeedbackType("correct");  // Set feedbackType to "correct"
         } else {
             setFeedbackMessage(`Wrong! The correct answer is: ${correctAnswer}`);
+            setFeedbackType("incorrect");  // Set feedbackType to "incorrect"
         }
 
         setUserAnswer(answer);
@@ -77,6 +82,8 @@ const Trivia = () => {
                 setCurrentQuestion(currentQuestion + 1);
                 setUserAnswer(null);
                 setFeedbackMessage("");
+                setFeedbackType("");
+                setTimeLeft(10);
             } else {
                 setFinalScore(true);
             }
@@ -92,8 +99,10 @@ const Trivia = () => {
         if (inputAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim()) {
             setScore(score + 1);
             setFeedbackMessage("Correct!");
+            setFeedbackType("correct");
         } else {
             setFeedbackMessage(`Wrong! The correct answer is: ${correctAnswer}`);
+            setFeedbackType("incorrect");
         }
 
         setUserAnswer(inputAnswer);
@@ -103,11 +112,30 @@ const Trivia = () => {
                 setCurrentQuestion(currentQuestion + 1);
                 setUserAnswer(null);
                 setFeedbackMessage("");
+                setFeedbackType("");
+                setTimeLeft(10);
             } else {
                 setFinalScore(true);
             }
         }, 2000);  // Time out after 2 seconds for the message to show
     };
+
+
+    // Timer effect
+    useEffect(() => {
+        if (isTimerMode && timeLeft > 0 && !userAnswer) {
+            const timer = setInterval(() => {
+                setTimeLeft((prevTime) => prevTime - 1);
+            }, 1000);
+
+            return () => clearInterval(timer);  // Cleanup on component unmount or when timer is done
+        } else if (timeLeft === 0) {
+            setFeedbackMessage("Time's up!");
+            setTimeout(() => {
+                handleAnswer(null);
+            }, 1000);
+        }
+    }, [timeLeft, isTimerMode, userAnswer]);
 
     if (error) {
         return <div>Error: {error.message}</div>;
@@ -126,6 +154,7 @@ const Trivia = () => {
                         setScore(0);
                         setFinalScore(false);
                         setFeedbackMessage("");
+                        setTimeLeft(10);
                     }}>
                         Restart Quiz
                     </button>
@@ -136,7 +165,7 @@ const Trivia = () => {
 
     // If there are no questions or the questions are still loading
     if (loading) {
-        return <Load />;
+        return <Load />;  // Show the loading spinner
     }
 
     const question = questions[currentQuestion];
@@ -145,8 +174,33 @@ const Trivia = () => {
     return (
         <section className="trivia-container">
             <h1>Welcome to Bible Trivia</h1>
+
+            {/* Buttons for switching modes */}
+            <div className="mode-buttons">
+                <button 
+                    onClick={() => setIsTimerMode(false)} 
+                    className={`mode-button ${!isTimerMode ? 'active' : ''}`} // Add 'active' class for the selected mode
+                    disabled={!isTimerMode}
+                >
+                    Normal Mode
+                </button>
+                <button 
+                    onClick={() => setIsTimerMode(true)} 
+                    className={`mode-button ${isTimerMode ? 'active' : ''}`}
+                    disabled={isTimerMode}
+                >
+                    Timer Mode
+                </button>
+            </div>
+
             <div className="trivia-section">            
                 <h3>{question.question}</h3>
+
+                {/* Feedback message */}
+                {feedbackMessage && <div className={`feedback-message ${feedbackType}`}>{feedbackMessage}</div>}
+
+                {/* Show timer if timer mode is active */}
+                {isTimerMode && <div className="timer">Time Left: {timeLeft}s</div>}
 
                 {/* Check if the question has multiple-choice options */}
                 {choices.length > 0 ? (
@@ -169,7 +223,7 @@ const Trivia = () => {
                                     key={index}
                                     onClick={() => handleAnswer(choice)}
                                     className={buttonClass}
-                                    disabled={userAnswer !== null} // Makes sure user cannot press on another answer once the 1st is clicked
+                                    disabled={userAnswer !== null}  // Makes sure user cannot press on another answer once the 1st is clicked
                                 >
                                     {buttonLabel}
                                 </button>
@@ -178,7 +232,7 @@ const Trivia = () => {
                     </div>
                 ) : (
                     // If it's a text-based question, show an input field
-                    <div>
+                    <div className='input-container'>
                         <input
                             type="text"
                             value={userAnswer || ""}
@@ -190,11 +244,11 @@ const Trivia = () => {
                         </button>
                     </div>
                 )}
-
-                {feedbackMessage && <div className="feedback-message">{feedbackMessage}</div>}
             </div>
         </section>
+
     );
+    
 };
 
 export default Trivia;
