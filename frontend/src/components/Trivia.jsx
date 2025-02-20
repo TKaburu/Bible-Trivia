@@ -15,6 +15,7 @@ const Trivia = () => {
     const [feedbackType, setFeedbackType] = useState(""); 
     const [isTimerMode, setIsTimerMode] = useState(false);  // Track if timer mode is active
     const [timeLeft, setTimeLeft] = useState(10);  // Timer countdown value
+    const [isDarkMode, setIsDarkMode] = useState(false); // Track theme
 
     useEffect(() => {
         axios.get('http://127.0.0.1:8000/trivia/questions')
@@ -30,13 +31,10 @@ const Trivia = () => {
                     // Shuffle choices before returning the question object
                     const shuffledChoices = randomizeQuestions(choices);
 
-                    // Set the correct answer text directly
-                    const correctAnswerText = question.correct_answer;
-
                     return {
                         ...question,
                         choices: shuffledChoices,
-                        correct_answer: correctAnswerText // Store the correct answer text (not index)
+                        correct_answer: question.correct_answer // Store the correct answer text (not index)
                     };
                 });
 
@@ -49,6 +47,22 @@ const Trivia = () => {
                 setError(err);
                 setLoading(false);
             });
+    }, []);
+
+    // Toggle Dark/Light Theme
+    const toggleTheme = () => {
+        setIsDarkMode(!isDarkMode);
+        document.body.classList.toggle('dark-theme', !isDarkMode);
+        localStorage.setItem('theme', !isDarkMode ? 'dark' : 'light');
+    };
+
+    // Retrieve stored theme on component mount
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            setIsDarkMode(true);
+            document.body.classList.add('dark-theme');
+        }
     }, []);
 
     // Shuffle the questions
@@ -65,14 +79,13 @@ const Trivia = () => {
 
         if (!correctAnswer) return;
 
-        // Check if the user's answer matches the correct one
         if (answer === correctAnswer) {
             setScore(score + 1);
             setFeedbackMessage("Correct!");
-            setFeedbackType("correct");  // Set feedbackType to "correct"
+            setFeedbackType("correct");
         } else {
             setFeedbackMessage(`Wrong! The correct answer is: ${correctAnswer}`);
-            setFeedbackType("incorrect");  // Set feedbackType to "incorrect"
+            setFeedbackType("incorrect");
         }
 
         setUserAnswer(answer);
@@ -90,7 +103,6 @@ const Trivia = () => {
         }, 2000);
     };
 
-    // Handle user input for text-based questions
     const handleInputAnswer = (inputAnswer) => {
         const correctAnswer = questions[currentQuestion]?.correct_answer;
 
@@ -117,9 +129,8 @@ const Trivia = () => {
             } else {
                 setFinalScore(true);
             }
-        }, 2000);  // Time out after 2 seconds for the message to show
+        }, 2000);
     };
-
 
     // Timer effect
     useEffect(() => {
@@ -128,7 +139,7 @@ const Trivia = () => {
                 setTimeLeft((prevTime) => prevTime - 1);
             }, 1000);
 
-            return () => clearInterval(timer);  // Cleanup on component unmount or when timer is done
+            return () => clearInterval(timer);  // Cleanup on component when timer is done
         } else if (timeLeft === 0) {
             setFeedbackMessage("Time's up!");
             setTimeout(() => {
@@ -165,7 +176,7 @@ const Trivia = () => {
 
     // If there are no questions or the questions are still loading
     if (loading) {
-        return <Load />;  // Show the loading spinner
+        return <Load />;
     }
 
     const question = questions[currentQuestion];
@@ -173,13 +184,23 @@ const Trivia = () => {
 
     return (
         <section className="trivia-container">
-            <h1>Welcome to Bible Trivia</h1>
+            <h1>Bible Trivia</h1>
+            <p className='subtitle'>Test your knowledge on the Word</p>
 
-            {/* Buttons for switching modes */}
+            {/* Theme toggle button (Sun/Moon icons) */}
+            <div className="theme-toggle" onClick={toggleTheme}>
+                {isDarkMode ? (
+                    <i className="fas fa-sun"></i>
+                ) : (
+                    <i className="fas fa-moon"></i>
+                )}
+            </div>
+
+            {/* Mode toggle buttons */}
             <div className="mode-buttons">
                 <button 
                     onClick={() => setIsTimerMode(false)} 
-                    className={`mode-button ${!isTimerMode ? 'active' : ''}`} // Add 'active' class for the selected mode
+                    className={`mode-button ${!isTimerMode ? 'active' : ''}`}
                     disabled={!isTimerMode}
                 >
                     Normal Mode
@@ -206,7 +227,7 @@ const Trivia = () => {
                 {choices.length > 0 ? (
                     <div>
                         {choices.map((choice, index) => {
-                            const labels = ['A:', 'B:', 'C:', 'D:']; // Labels for the multiple choices
+                            const labels = ['A:', 'B:', 'C:', 'D:']; 
                             const buttonLabel = `${labels[index]} ${choice}`;
 
                             let buttonClass = "";
@@ -223,7 +244,7 @@ const Trivia = () => {
                                     key={index}
                                     onClick={() => handleAnswer(choice)}
                                     className={buttonClass}
-                                    disabled={userAnswer !== null}  // Makes sure user cannot press on another answer once the 1st is clicked
+                                    disabled={userAnswer !== null}
                                 >
                                     {buttonLabel}
                                 </button>
@@ -231,7 +252,6 @@ const Trivia = () => {
                         })}
                     </div>
                 ) : (
-                    // If it's a text-based question, show an input field
                     <div className='input-container'>
                         <input
                             type="text"
@@ -246,9 +266,7 @@ const Trivia = () => {
                 )}
             </div>
         </section>
-
     );
-    
 };
 
 export default Trivia;
