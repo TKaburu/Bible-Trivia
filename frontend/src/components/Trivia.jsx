@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Load from './Load';
 import axios from 'axios';
 import '../styles/trivia.css';
@@ -74,7 +74,7 @@ const Trivia = () => {
         return array;
     };
 
-    const handleAnswer = (answer) => {
+    const handleAnswer = useCallback((answer) => {
         const correctAnswer = questions[currentQuestion]?.correct_answer;
 
         if (!correctAnswer) return;
@@ -101,7 +101,7 @@ const Trivia = () => {
                 setFinalScore(true);
             }
         }, 2000);
-    };
+    }, [questions, currentQuestion, score]);
 
     const handleInputAnswer = (inputAnswer) => {
         const correctAnswer = questions[currentQuestion]?.correct_answer;
@@ -146,7 +146,7 @@ const Trivia = () => {
                 handleAnswer(null);
             }, 1000);
         }
-    }, [timeLeft, isTimerMode, userAnswer]);
+    }, [timeLeft, isTimerMode, userAnswer, handleAnswer]);
 
     if (error) {
         return <div>Error: {error.message}</div>;
